@@ -6,402 +6,159 @@
   <title>Colorimetric PAD · Microfluidic Ab Assay</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    }
+    * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; }
+    body { background:#f2f7fe; min-height:100vh; display:flex; justify-content:center; align-items:flex-start; padding:0.8rem 0.8rem 2rem; }
+    .app { max-width:480px; width:100%; background:white; border-radius:2rem; box-shadow:0 12px 30px rgba(0,20,40,0.12); padding:1.2rem 1rem 1.8rem; margin:0 auto; }
 
-    body {
-      background: #f2f7fe;
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      padding: 0.8rem 0.8rem 2rem;
-    }
-
-    .app {
-      max-width: 480px;
-      width: 100%;
-      background: white;
-      border-radius: 2rem;
-      box-shadow: 0 12px 30px rgba(0, 20, 40, 0.12);
-      padding: 1.2rem 1rem 1.8rem;
-      margin: 0 auto;
-    }
-
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1rem;
-      flex-wrap: wrap;
-    }
-
-    .header h1 {
-      font-size: 1.4rem;
-      font-weight: 600;
-      color: #0b2b4a;
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-    }
-
-    .header h1 i { color: #1f6fdf; font-size: 1.3rem; }
-
-    .status-badge {
-      background: #fff8e1;
-      color: #8a6300;
-      padding: 0.2rem 0.8rem;
-      border-radius: 30px;
-      font-size: 0.62rem;
-      font-weight: 600;
-      border: 1px solid #f0dca0;
-      white-space: nowrap;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
+    .header { display:flex; justify-content:space-between; align-items:center; margin-bottom:0.9rem; flex-wrap:wrap; }
+    .header h1 { font-size:1.4rem; font-weight:600; color:#0b2b4a; display:flex; align-items:center; gap:0.4rem; }
+    .header h1 i { color:#1f6fdf; font-size:1.3rem; }
+    .status-badge { background:#fff8e1; color:#8a6300; padding:0.2rem 0.8rem; border-radius:30px; font-size:0.6rem; font-weight:600; border:1px solid #f0dca0; white-space:nowrap; display:flex; align-items:center; gap:5px; }
     .status-badge .dot { width:7px; height:7px; border-radius:50%; background:#e7b400; display:inline-block; }
 
-    .step-indicator {
-      display: flex;
-      gap: 0.25rem;
-      margin-bottom: 1.1rem;
-      border-bottom: 1px solid #e2ebf6;
-      padding-bottom: 0.5rem;
-    }
+    .mode-switch { display:flex; gap:0.4rem; margin-bottom:0.8rem; }
+    .mode-btn { flex:1; padding:0.55rem 0.4rem; border-radius:1rem; border:1.5px solid #cfe0f5; background:#fafcff; color:#3f5e80; font-weight:600; font-size:0.72rem; display:flex; flex-direction:column; align-items:center; gap:2px; cursor:pointer; }
+    .mode-btn i { font-size:1rem; color:#2a6bb0; }
+    .mode-btn.active { background:#1a5bbf; border-color:#1a5bbf; color:#fff; }
+    .mode-btn.active i { color:#fff; }
+    .mode-btn.disabled { opacity:0.4; cursor:not-allowed; }
+    .mode-btn small { font-weight:400; font-size:0.6rem; opacity:0.85; }
 
-    .step-tab {
-      padding: 0.3rem 0.4rem;
-      border-radius: 30px;
-      font-size: 0.62rem;
-      font-weight: 500;
-      color: #3f5e80;
-      background: transparent;
-      border: 1px solid transparent;
-      cursor: default;
-      flex: 1;
-      text-align: center;
-      white-space: nowrap;
-    }
-    .step-tab.active { background: #1a5bbf; color: white; border-color: #1a5bbf; }
-    .step-tab i { margin-right: 3px; }
+    .step-indicator { display:flex; gap:0.25rem; margin-bottom:1rem; border-bottom:1px solid #e2ebf6; padding-bottom:0.5rem; }
+    .step-tab { padding:0.3rem 0.3rem; border-radius:30px; font-size:0.6rem; font-weight:500; color:#3f5e80; background:transparent; border:1px solid transparent; cursor:default; flex:1; text-align:center; white-space:nowrap; }
+    .step-tab.active { background:#1a5bbf; color:white; border-color:#1a5bbf; }
+    .step-tab i { margin-right:3px; }
 
-    .page { display: none; animation: fadeIn 0.2s ease; }
-    .page.active { display: block; }
-    @keyframes fadeIn {
-      0% { opacity: 0.3; transform: translateY(4px); }
-      100% { opacity: 1; transform: translateY(0); }
-    }
+    .page { display:none; animation:fadeIn 0.2s ease; }
+    .page.active { display:block; }
+    @keyframes fadeIn { 0%{opacity:0.3; transform:translateY(4px);} 100%{opacity:1; transform:translateY(0);} }
 
-    .panel {
-      background: #f8fbff;
-      border-radius: 1.5rem;
-      padding: 1rem;
-      border: 1px solid #e1eaf5;
-    }
+    .calib-only, .sample-only { display:none; }
+    .app.mode-calibration .calib-only { display:block; }
+    .app.mode-sample .sample-only { display:block; }
 
-    .hint {
-      font-size: 0.72rem;
-      color: #4a6a8c;
-      margin-bottom: 0.7rem;
-      line-height: 1.4;
-    }
-    .hint i { color: #2a6bb0; margin-right: 4px; }
+    .panel { background:#f8fbff; border-radius:1.5rem; padding:1rem; border:1px solid #e1eaf5; }
+    .hint { font-size:0.72rem; color:#4a6a8c; margin-bottom:0.7rem; line-height:1.4; }
+    .hint i { color:#2a6bb0; margin-right:4px; }
 
-    .preview-box {
-      width: 100%;
-      background: #eaf1fb;
-      border-radius: 1.2rem;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 180px;
-      border: 1px dashed #b3cae5;
-      overflow: hidden;
-      position: relative;
-    }
-    .preview-box img { max-width: 100%; max-height: 280px; object-fit: contain; display: block; }
+    .preview-box { width:100%; background:#eaf1fb; border-radius:1.2rem; display:flex; justify-content:center; align-items:center; min-height:180px; border:1px dashed #b3cae5; overflow:hidden; position:relative; }
+    .preview-box img { max-width:100%; max-height:280px; object-fit:contain; display:block; }
+    .placeholder-text { color:#3a5f83; padding:1.8rem 0.5rem; text-align:center; display:flex; flex-direction:column; align-items:center; gap:0.2rem; }
+    .placeholder-text i { font-size:2.8rem; color:#7d9fc9; }
+    .placeholder-text span { font-size:0.85rem; }
 
-    .placeholder-text {
-      color: #3a5f83;
-      padding: 1.8rem 0.5rem;
-      text-align: center;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.2rem;
-    }
-    .placeholder-text i { font-size: 2.8rem; color: #7d9fc9; }
-    .placeholder-text span { font-size: 0.85rem; }
+    .canvas-box { width:100%; height:300px; background:#0b1d33; border-radius:1.2rem; overflow:hidden; position:relative; border:1px solid #1a3a5c; }
+    .canvas-box canvas { width:100%; height:100%; display:block; touch-action:none; object-fit:contain; }
 
-    .canvas-box {
-      width: 100%;
-      height: 300px;
-      background: #0b1d33;
-      border-radius: 1.2rem;
-      overflow: hidden;
-      position: relative;
-      border: 1px solid #1a3a5c;
-    }
-    .canvas-box canvas {
-      width: 100%;
-      height: 100%;
-      display: block;
-      touch-action: none;
-      object-fit: contain;
-    }
+    .field-row { display:flex; gap:0.5rem; margin-bottom:0.7rem; }
+    .field-row > div { flex:1; }
+    .field-row label { font-size:0.62rem; color:#5b738f; font-weight:600; display:block; margin-bottom:2px; }
+    .field-row input[type=text], .field-row input[type=number] { width:100%; padding:0.45rem 0.6rem; border:1px solid #cfddef; border-radius:0.6rem; font-size:0.8rem; }
 
-    .action-row {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 0.6rem;
-      margin-top: 1.1rem;
-    }
+    .action-row { display:flex; flex-wrap:wrap; justify-content:center; gap:0.6rem; margin-top:1.1rem; }
+    .btn { background:white; border:1px solid #c8d8ec; padding:0.6rem 1.1rem; border-radius:60px; font-weight:500; font-size:0.78rem; color:#1f3a5e; cursor:pointer; display:inline-flex; align-items:center; gap:6px; flex:1 1 auto; justify-content:center; }
+    .btn i { color:#2a6bb0; font-size:0.85rem; }
+    .btn-primary { background:#1a5bbf; border-color:#1a5bbf; color:white; }
+    .btn-primary i { color:white; }
+    .btn-primary:active { background:#124a9e; transform:scale(0.96); }
+    .btn-success { background:#1a8b4a; border-color:#1a8b4a; color:white; }
+    .btn-success i { color:white; }
+    .btn-success:active { background:#14733d; transform:scale(0.96); }
+    .btn-outline:active { background:#e9f0fa; }
+    .btn-sm { padding:0.3rem 0.9rem; font-size:0.68rem; }
+    .btn-text { background:none; border:none; color:#1a5bbf; font-size:0.68rem; font-weight:600; padding:0.3rem; flex:none; }
+    .btn:disabled { opacity:0.45; cursor:not-allowed; }
 
-    .btn {
-      background: white;
-      border: 1px solid #c8d8ec;
-      padding: 0.6rem 1.1rem;
-      border-radius: 60px;
-      font-weight: 500;
-      font-size: 0.78rem;
-      color: #1f3a5e;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      transition: 0.1s;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-      flex: 1 1 auto;
-      justify-content: center;
-    }
-    .btn i { color: #2a6bb0; font-size: 0.85rem; }
-    .btn-primary { background: #1a5bbf; border-color: #1a5bbf; color: white; }
-    .btn-primary i { color: white; }
-    .btn-primary:active { background: #124a9e; transform: scale(0.96); }
-    .btn-success { background: #1a8b4a; border-color: #1a8b4a; color: white; }
-    .btn-success i { color: white; }
-    .btn-success:active { background: #14733d; transform: scale(0.96); }
-    .btn-outline:active { background: #e9f0fa; }
-    .btn-sm { padding: 0.3rem 0.9rem; font-size: 0.68rem; }
-    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+    #fileInput { display:none; }
+    .image-status { text-align:center; margin-top:0.5rem; font-size:0.7rem; color:#5e7b9b; }
 
-    #fileInput { display: none; }
+    .top-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:0.8rem; flex-wrap:wrap; gap:0.4rem; }
+    .top-row h2 { font-size:1.1rem; font-weight:600; color:#0b2b4a; display:flex; align-items:center; gap:0.3rem; }
+    .top-row h2 i { color:#1f6fdf; }
 
-    .image-status { text-align: center; margin-top: 0.5rem; font-size: 0.7rem; color: #5e7b9b; }
+    .slider-row { margin-top:0.9rem; }
+    .slider-row label { font-size:0.68rem; font-weight:600; color:#3f5e80; display:flex; justify-content:space-between; margin-bottom:0.2rem; }
+    .slider-row input[type=range] { width:100%; accent-color:#1a5bbf; }
 
-    .top-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 0.8rem;
-      flex-wrap: wrap;
-      gap: 0.4rem;
-    }
-    .top-row h2 {
-      font-size: 1.1rem;
-      font-weight: 600;
-      color: #0b2b4a;
-      display: flex;
-      align-items: center;
-      gap: 0.3rem;
-    }
-    .top-row h2 i { color: #1f6fdf; }
+    .info-panel { margin-top:0.8rem; background:#eef5ff; border:1px solid #cfe0f5; border-radius:1rem; padding:0.7rem 0.9rem; font-size:0.74rem; color:#1a3d62; line-height:1.4; display:none; }
+    .info-panel.show { display:block; }
+    .info-panel i { color:#1a5bbf; margin-right:5px; }
 
-    .slider-row { margin-top: 0.9rem; }
-    .slider-row label {
-      font-size: 0.68rem;
-      font-weight: 600;
-      color: #3f5e80;
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 0.2rem;
-    }
-    .slider-row input[type=range] { width: 100%; accent-color: #1a5bbf; }
+    .live-readout { margin-top:0.9rem; background:#fafcff; border:1px solid #e2ebf6; border-radius:1.1rem; padding:0.8rem 0.9rem; display:flex; align-items:center; gap:0.8rem; }
+    .swatch { width:44px; height:44px; border-radius:0.7rem; border:1px solid #d9e3ef; flex-shrink:0; background:#d9d9d9; }
+    .live-readout .txt { font-size:0.72rem; color:#3b5c7e; line-height:1.45; }
+    .live-readout .txt b { color:#0b2b4a; }
+    .live-readout .note { font-size:0.65rem; margin-top:2px; }
+    .note-ok { color:#0a6b3a; }
+    .note-warn { color:#b5530a; }
 
-    .info-panel {
-      margin-top: 0.8rem;
-      background: #eef5ff;
-      border: 1px solid #cfe0f5;
-      border-radius: 1rem;
-      padding: 0.7rem 0.9rem;
-      font-size: 0.74rem;
-      color: #1a3d62;
-      line-height: 1.4;
-      display: none;
-    }
-    .info-panel.show { display: block; }
-    .info-panel i { color: #1a5bbf; margin-right: 5px; }
+    .result-grid { display:grid; grid-template-columns:1fr 1fr; gap:0.7rem; margin-top:0.2rem; }
+    .metric-card { background:#fafcff; border-radius:1.2rem; padding:0.85rem 0.8rem 0.75rem; border:1px solid #e2ebf6; }
+    .metric-card .label { font-size:0.58rem; text-transform:uppercase; letter-spacing:0.04em; color:#5b738f; font-weight:600; display:flex; align-items:center; gap:4px; margin-bottom:0.2rem; }
+    .metric-card .value { font-size:1.35rem; font-weight:600; color:#0b2b4a; line-height:1.2; word-break:break-word; }
+    .metric-card .sub { font-size:0.62rem; color:#3b5c7e; margin-top:0.2rem; border-top:1px solid #e6eefa; padding-top:0.3rem; }
+    .sub-warn { color:#b5530a !important; font-weight:600; }
+    .result-badge { display:inline-block; padding:0.15rem 1rem; border-radius:40px; font-weight:600; font-size:0.78rem; background:#e6edf6; color:#1a3d62; }
+    .result-badge.positive { background:#d6f0e0; color:#0a6b3a; }
+    .result-badge.negative { background:#e9eef6; color:#3a5370; }
+    .full-width { grid-column:1/-1; }
+    .calib-link { font-size:0.68rem; color:#1a5bbf; font-weight:600; margin-top:0.8rem; display:inline-flex; align-items:center; gap:4px; cursor:pointer; }
 
-    .live-readout {
-      margin-top: 0.9rem;
-      background: #fafcff;
-      border: 1px solid #e2ebf6;
-      border-radius: 1.1rem;
-      padding: 0.8rem 0.9rem;
-      display: flex;
-      align-items: center;
-      gap: 0.8rem;
-    }
-    .swatch {
-      width: 44px;
-      height: 44px;
-      border-radius: 0.7rem;
-      border: 1px solid #d9e3ef;
-      flex-shrink: 0;
-      background: #d9d9d9;
-    }
-    .live-readout .txt { font-size: 0.72rem; color: #3b5c7e; line-height: 1.45; }
-    .live-readout .txt b { color: #0b2b4a; }
-    .live-readout .note { font-size: 0.65rem; margin-top: 2px; }
-    .note-ok { color: #0a6b3a; }
-    .note-warn { color: #b5530a; }
+    .chart-box { width:100%; height:210px; background:#fafcff; border:1px solid #e2ebf6; border-radius:1.1rem; overflow:hidden; display:flex; align-items:center; justify-content:center; }
+    .chart-empty { font-size:0.75rem; color:#5e7b9b; text-align:center; padding:1rem; }
+    .calib-disclaimer { font-size:0.66rem; color:#b5530a; background:#fff6e8; border:1px solid #f0dca0; border-radius:0.7rem; padding:0.5rem 0.7rem; margin:0.7rem 0; line-height:1.4; }
+    .calib-status { font-size:0.68rem; color:#3b5c7e; margin:0.4rem 0 0.6rem; }
+    .calib-status.warn { color:#b5530a; font-weight:600; }
 
-    .result-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0.7rem;
-      margin-top: 0.2rem;
-    }
-    .metric-card {
-      background: #fafcff;
-      border-radius: 1.2rem;
-      padding: 0.85rem 0.8rem 0.75rem;
-      border: 1px solid #e2ebf6;
-      box-shadow: 0 2px 4px rgba(0, 10, 30, 0.02);
-    }
-    .metric-card .label {
-      font-size: 0.58rem;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-      color: #5b738f;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      margin-bottom: 0.2rem;
-    }
-    .metric-card .value {
-      font-size: 1.35rem;
-      font-weight: 600;
-      color: #0b2b4a;
-      line-height: 1.2;
-      word-break: break-word;
-    }
-    .metric-card .sub {
-      font-size: 0.62rem;
-      color: #3b5c7e;
-      margin-top: 0.2rem;
-      border-top: 1px solid #e6eefa;
-      padding-top: 0.3rem;
-    }
-    .sub-warn { color: #b5530a !important; font-weight: 600; }
+    table.calib-table { width:100%; border-collapse:collapse; font-size:0.7rem; margin-bottom:0.6rem; }
+    table.calib-table th { text-align:left; color:#5b738f; font-size:0.6rem; text-transform:uppercase; padding-bottom:4px; }
+    table.calib-table td { padding:3px 3px; }
+    table.calib-table input[type=number] { width:100%; padding:0.3rem 0.4rem; border:1px solid #cfddef; border-radius:0.4rem; font-size:0.72rem; }
+    .row-del { background:none; border:none; color:#c23b3b; font-size:0.85rem; cursor:pointer; padding:2px 6px; }
 
-    .result-badge {
-      display: inline-block;
-      padding: 0.15rem 1rem;
-      border-radius: 40px;
-      font-weight: 600;
-      font-size: 0.78rem;
-      background: #e6edf6;
-      color: #1a3d62;
-    }
-    .result-badge.positive { background: #d6f0e0; color: #0a6b3a; }
-    .result-badge.negative { background: #e9eef6; color: #3a5370; }
+    .result-actions { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:0.6rem; margin-top:1.4rem; border-top:1px solid #e4ecf6; padding-top:1.1rem; }
 
-    .full-width { grid-column: 1 / -1; }
-
-    .calib-toggle {
-      margin-top: 1rem;
-      font-size: 0.72rem;
-      font-weight: 600;
-      color: #1a5bbf;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      cursor: pointer;
-      user-select: none;
-    }
-
-    .calib-section {
-      display: none;
-      margin-top: 0.6rem;
-      background: #fafcff;
-      border: 1px solid #e2ebf6;
-      border-radius: 1.1rem;
-      padding: 0.8rem;
-    }
-    .calib-section.show { display: block; }
-
-    .calib-disclaimer {
-      font-size: 0.66rem;
-      color: #b5530a;
-      background: #fff6e8;
-      border: 1px solid #f0dca0;
-      border-radius: 0.7rem;
-      padding: 0.5rem 0.7rem;
-      margin-bottom: 0.7rem;
-      line-height: 1.4;
-    }
-
-    .calib-field-row { display: flex; gap: 0.5rem; margin-bottom: 0.6rem; }
-    .calib-field-row > div { flex: 1; }
-    .calib-field-row label { font-size: 0.6rem; color: #5b738f; font-weight: 600; display:block; margin-bottom:2px; }
-    .calib-field-row input[type=text], .calib-field-row input[type=number] {
-      width: 100%; padding: 0.35rem 0.5rem; border: 1px solid #cfddef; border-radius: 0.5rem; font-size: 0.75rem;
-    }
-
-    table.calib-table { width: 100%; border-collapse: collapse; font-size: 0.7rem; margin-bottom: 0.6rem; }
-    table.calib-table th { text-align: left; color: #5b738f; font-size: 0.6rem; text-transform: uppercase; padding-bottom: 4px; }
-    table.calib-table td { padding: 3px 3px; }
-    table.calib-table input[type=number] {
-      width: 100%; padding: 0.3rem 0.4rem; border: 1px solid #cfddef; border-radius: 0.4rem; font-size: 0.72rem;
-    }
-    .row-del { background: none; border: none; color: #c23b3b; font-size: 0.85rem; cursor: pointer; padding: 2px 6px; }
-
-    .result-actions {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-      gap: 0.6rem;
-      margin-top: 1.4rem;
-      border-top: 1px solid #e4ecf6;
-      padding-top: 1.1rem;
-    }
-
-    @media (max-width: 400px) {
-      .app { padding: 0.8rem; }
-      .result-grid { gap: 0.5rem; }
-      .metric-card .value { font-size: 1.15rem; }
-      .btn { font-size: 0.68rem; padding: 0.5rem 0.7rem; }
-      .step-tab { font-size: 0.55rem; padding: 0.28rem 0.2rem; }
+    @media (max-width:400px) {
+      .app { padding:0.8rem; }
+      .result-grid { gap:0.5rem; }
+      .metric-card .value { font-size:1.15rem; }
+      .btn { font-size:0.68rem; padding:0.5rem 0.7rem; }
+      .step-tab { font-size:0.53rem; padding:0.26rem 0.15rem; }
+      .mode-btn { font-size:0.66rem; }
     }
   </style>
 </head>
 <body>
 
-<div class="app" id="app">
+<div class="app mode-calibration" id="app">
 
   <div class="header">
     <h1><i class="fas fa-microscope"></i> PAD</h1>
     <span class="status-badge"><span class="dot"></span> Ab · Colorimetric</span>
   </div>
 
+  <div class="mode-switch">
+    <button class="mode-btn active" id="modeCalibBtn"><i class="fas fa-chart-line"></i> Build calibration<small>known standards</small></button>
+    <button class="mode-btn disabled" id="modeSampleBtn" disabled><i class="fas fa-vial"></i> Analyze sample<small>needs ≥2 standards</small></button>
+  </div>
+
   <div class="step-indicator">
     <span class="step-tab active" data-page="capture"><i class="fas fa-camera"></i>Capture</span>
     <span class="step-tab" data-page="mark"><i class="fas fa-draw-polygon"></i>Mark</span>
     <span class="step-tab" data-page="analyze"><i class="fas fa-crosshairs"></i>Analyze</span>
-    <span class="step-tab" data-page="result"><i class="fas fa-chart-pie"></i>Result</span>
+    <span class="step-tab" id="tab4" data-page="curve"><i class="fas fa-chart-line"></i>Curve</span>
   </div>
 
   <!-- ========== PAGE 1 : CAPTURE ========== -->
   <div class="page active" id="capturePage">
     <div class="panel">
+      <div class="hint calib-only"><i class="fas fa-flask-vial"></i>Photograph a standard of <b>known</b> concentration. You'll build the real calibration curve from these.</div>
+      <div class="hint sample-only"><i class="fas fa-question"></i>Photograph the unknown sample you want to measure. Its expression level will be read off your calibration curve.</div>
+
+      <div class="field-row calib-only">
+        <div><label>Known concentration</label><input type="number" id="stdConcInput" step="any" placeholder="e.g. 25"></div>
+      </div>
+
       <div class="preview-box" id="previewBox">
         <div class="placeholder-text" id="placeholder">
           <i class="fas fa-image"></i>
@@ -419,7 +176,7 @@
     </div>
   </div>
 
-  <!-- ========== PAGE 2 : MARK DEVICE SHAPE ========== -->
+  <!-- ========== PAGE 2 : MARK ========== -->
   <div class="page" id="markPage">
     <div class="top-row">
       <h2><i class="fas fa-draw-polygon"></i> Mark device</h2>
@@ -445,13 +202,13 @@
     </div>
   </div>
 
-  <!-- ========== PAGE 3 : ANALYZE / SELECT POINT ========== -->
+  <!-- ========== PAGE 3 : ANALYZE ========== -->
   <div class="page" id="analyzePage">
     <div class="top-row">
       <h2><i class="fas fa-crosshairs"></i> Select point</h2>
       <button class="btn btn-outline btn-sm" data-back="mark"><i class="fas fa-arrow-left"></i> Back</button>
     </div>
-    <div class="hint"><i class="fas fa-circle-info"></i>Tap the exact spot inside the chamber where you want to read color intensity. Use the same lighting for every device you compare.</div>
+    <div class="hint"><i class="fas fa-circle-info"></i>Tap the exact spot inside the chamber to read color intensity. Keep lighting the same across every photo you compare.</div>
     <div class="canvas-box" id="analyzeCanvasContainer"></div>
 
     <div class="live-readout" id="liveReadout" style="display:none;">
@@ -464,11 +221,47 @@
     </div>
 
     <div class="action-row">
-      <button class="btn btn-primary" id="calcBtn" disabled><i class="fas fa-calculator"></i> Calculate expression level</button>
+      <button class="btn btn-primary" id="calcBtn" disabled><i class="fas fa-plus"></i> Add to calibration curve</button>
     </div>
   </div>
 
-  <!-- ========== PAGE 4 : RESULT ========== -->
+  <!-- ========== PAGE 4a : CURVE (calibration mode) ========== -->
+  <div class="page" id="curvePage">
+    <div class="top-row">
+      <h2><i class="fas fa-chart-line"></i> Calibration curve</h2>
+      <button class="btn btn-outline btn-sm" data-back="analyze"><i class="fas fa-arrow-left"></i> Back</button>
+    </div>
+
+    <div class="chart-box" id="calibChartBox"></div>
+    <div class="calib-status" id="calibStatus"></div>
+
+    <div class="field-row">
+      <div><label>Units</label><input type="text" id="unitsInput" value="ng/mL"></div>
+      <div><label>Positive cutoff</label><input type="number" id="cutoffInput" value="50" step="any"></div>
+    </div>
+
+    <div class="calib-disclaimer"><i class="fas fa-triangle-exclamation"></i> These points come from your own photographed standards — but a curve is only as good as the standards behind it. Use enough points across your real expected range, in replicate if possible, before trusting a sample reading.</div>
+
+    <table class="calib-table">
+      <thead><tr><th>Concentration</th><th>b* (yellow)</th><th></th></tr></thead>
+      <tbody id="calibTableBody"></tbody>
+    </table>
+
+    <div class="action-row">
+      <button class="btn btn-success" id="addStandardBtn"><i class="fas fa-camera"></i> Add standard (photo)</button>
+      <button class="btn btn-outline btn-sm" id="addRowBtn"><i class="fas fa-plus"></i> Add row manually</button>
+    </div>
+    <div class="action-row">
+      <button class="btn btn-text" id="loadExampleBtn">Load example dataset (demo only)</button>
+      <button class="btn btn-text" id="clearCalibBtn" style="color:#c23b3b;">Clear all</button>
+    </div>
+
+    <div class="result-actions">
+      <button class="btn btn-primary" id="useCalibBtn"><i class="fas fa-arrow-right"></i> Use this calibration → Analyze samples</button>
+    </div>
+  </div>
+
+  <!-- ========== PAGE 4b : RESULT (sample mode) ========== -->
   <div class="page" id="resultPage">
     <div class="top-row">
       <h2><i class="fas fa-flask"></i> Result</h2>
@@ -479,27 +272,23 @@
       <div class="metric-card">
         <div class="label"><i class="fas fa-vial"></i> Qualitative</div>
         <div class="value" id="qualResult"><span class="result-badge">—</span></div>
-        <div class="sub">vs cutoff</div>
+        <div class="sub" id="cutoffDisplay">vs cutoff</div>
       </div>
-
       <div class="metric-card">
         <div class="label"><i class="fas fa-weight-scale"></i> Expression level</div>
         <div class="value" id="exprValue">—</div>
         <div class="sub" id="exprSub">interpolated</div>
       </div>
-
       <div class="metric-card">
         <div class="label"><i class="fas fa-droplet"></i> Yellow intensity</div>
         <div class="value" id="bValue">—</div>
         <div class="sub">CIE Lab b* channel</div>
       </div>
-
       <div class="metric-card">
         <div class="label"><i class="fas fa-ruler"></i> Calib. range</div>
         <div class="value" id="rangeValue" style="font-size:1rem;">—</div>
         <div class="sub">vs your standards</div>
       </div>
-
       <div class="metric-card full-width" style="background:#f6faff;">
         <div class="label"><i class="fas fa-eye-dropper"></i> Raw sample (5×5 px avg)</div>
         <div style="display:flex; align-items:center; gap:0.8rem; margin-top:0.2rem;">
@@ -512,29 +301,11 @@
       </div>
     </div>
 
-    <div class="calib-toggle" id="calibToggle"><i class="fas fa-chevron-down"></i> Calibration data &amp; cutoff</div>
-    <div class="calib-section" id="calibSection">
-      <div class="calib-disclaimer"><i class="fas fa-triangle-exclamation"></i> The points below are an illustrative example, not validated standards. Replace them with readings from your own known-concentration samples before using this for real measurements.</div>
-
-      <div class="calib-field-row">
-        <div><label>Units</label><input type="text" id="unitsInput" value="ng/mL"></div>
-        <div><label>Positive cutoff</label><input type="number" id="cutoffInput" value="50" step="0.1"></div>
-      </div>
-
-      <table class="calib-table">
-        <thead><tr><th>Concentration</th><th>b* (yellow)</th><th></th></tr></thead>
-        <tbody id="calibTableBody"></tbody>
-      </table>
-
-      <div class="action-row" style="margin-top:0;">
-        <button class="btn btn-outline btn-sm" id="addRowBtn"><i class="fas fa-plus"></i> Add point</button>
-        <button class="btn btn-outline btn-sm" id="resetCalibBtn"><i class="fas fa-rotate-left"></i> Reset to example</button>
-      </div>
-    </div>
+    <div class="calib-link" id="editCalibLink"><i class="fas fa-pen"></i> View / edit calibration curve</div>
 
     <div class="result-actions">
       <button class="btn btn-outline btn-sm" id="exportBtn"><i class="fas fa-file-export"></i> Export</button>
-      <button class="btn btn-outline btn-sm" id="resetAllBtn"><i class="fas fa-rotate-left"></i> Start over</button>
+      <button class="btn btn-outline btn-sm" id="resetAllBtn"><i class="fas fa-rotate-left"></i> Analyze another sample</button>
     </div>
   </div>
 
@@ -546,6 +317,7 @@
   // ====================================================================
   // DOM refs
   // ====================================================================
+  const appEl = document.getElementById('app');
   const fileInput = document.getElementById('fileInput');
   const uploadBtn = document.getElementById('uploadBtn');
   const captureBtn = document.getElementById('captureBtn');
@@ -555,6 +327,7 @@
   const resetShapeBtn = document.getElementById('resetShapeBtn');
   const resetAllBtn = document.getElementById('resetAllBtn');
   const exportBtn = document.getElementById('exportBtn');
+  const stdConcInput = document.getElementById('stdConcInput');
 
   const placeholder = document.getElementById('placeholder');
   const uploadedImage = document.getElementById('uploadedImage');
@@ -577,44 +350,55 @@
   const exprSub = document.getElementById('exprSub');
   const bValue = document.getElementById('bValue');
   const rangeValue = document.getElementById('rangeValue');
+  const cutoffDisplay = document.getElementById('cutoffDisplay');
   const resultSwatch = document.getElementById('resultSwatch');
   const rIntensity = document.getElementById('rIntensity');
   const gIntensity = document.getElementById('gIntensity');
   const bIntensity = document.getElementById('bIntensity');
+  const editCalibLink = document.getElementById('editCalibLink');
 
-  const calibToggle = document.getElementById('calibToggle');
-  const calibSection = document.getElementById('calibSection');
+  const calibChartBox = document.getElementById('calibChartBox');
+  const calibStatus = document.getElementById('calibStatus');
   const calibTableBody = document.getElementById('calibTableBody');
   const unitsInput = document.getElementById('unitsInput');
   const cutoffInput = document.getElementById('cutoffInput');
+  const addStandardBtn = document.getElementById('addStandardBtn');
   const addRowBtn = document.getElementById('addRowBtn');
-  const resetCalibBtn = document.getElementById('resetCalibBtn');
+  const loadExampleBtn = document.getElementById('loadExampleBtn');
+  const clearCalibBtn = document.getElementById('clearCalibBtn');
+  const useCalibBtn = document.getElementById('useCalibBtn');
 
+  const modeCalibBtn = document.getElementById('modeCalibBtn');
+  const modeSampleBtn = document.getElementById('modeSampleBtn');
+  const tab4 = document.getElementById('tab4');
   const tabs = document.querySelectorAll('.step-tab');
   const backButtons = document.querySelectorAll('[data-back]');
 
   // ====================================================================
   // STATE
   // ====================================================================
+  let appMode = 'calibration'; // 'calibration' | 'sample'
   let currentPage = 'capture';
   let img = new Image();
   let offCanvas = document.createElement('canvas');
   let offCtx = offCanvas.getContext('2d');
-  const canvas = document.createElement('canvas'); // shared, moved between mark/analyze containers
+  const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
 
   let imageLoaded = false;
-  let shapeConfirmed = false;
+  let shapeInitialized = false;
   let analysisPoint = null;
-  let liveSample = null; // {rgb, lab}
+  let liveSample = null;
   let lastResult = null;
+  let units = 'ng/mL';
+  let cutoff = 50;
+  let calibration = []; // real data only — populated by photographing standards (or manual rows)
 
   const SHAPE_LOCAL = {
     inlet: { cx: 0, cy: -0.9, r: 0.12 },
     channel: { x: -0.06, y: -0.78, w: 0.12, h: 0.66 },
     chamber: { cx: 0, cy: 0.25, r: 0.32 }
   };
-
   let shapeState = { cx: 0, cy: 0, baseSize: 1, scale: 1, rotation: 0 };
 
   const PART_INFO = {
@@ -623,18 +407,56 @@
     chamber: '<i class="fas fa-bullseye"></i><b>Chamber</b> — the detection zone. The colorimetric reaction develops here — sample your reading from inside this circle.'
   };
 
-  let calibration = defaultCalibration();
-  function defaultCalibration() {
-    return [
-      { conc: 0, b: 3 },
-      { conc: 5, b: 9 },
-      { conc: 10, b: 15 },
-      { conc: 25, b: 27 },
-      { conc: 50, b: 38 },
-      { conc: 100, b: 48 },
-      { conc: 200, b: 55 }
-    ];
+  // ====================================================================
+  // MODE SWITCHING
+  // ====================================================================
+  function updateModeUI() {
+    appEl.classList.toggle('mode-calibration', appMode === 'calibration');
+    appEl.classList.toggle('mode-sample', appMode === 'sample');
+    modeCalibBtn.classList.toggle('active', appMode === 'calibration');
+    modeSampleBtn.classList.toggle('active', appMode === 'sample');
+
+    if (appMode === 'calibration') {
+      tab4.dataset.page = 'curve';
+      tab4.innerHTML = '<i class="fas fa-chart-line"></i>Curve';
+      calcBtn.innerHTML = '<i class="fas fa-plus"></i> Add to calibration curve';
+      goMarkBtn.innerHTML = '<i class="fas fa-arrow-right"></i> Mark device';
+    } else {
+      tab4.dataset.page = 'result';
+      tab4.innerHTML = '<i class="fas fa-flask"></i>Result';
+      calcBtn.innerHTML = '<i class="fas fa-calculator"></i> Calculate expression level';
+      goMarkBtn.innerHTML = '<i class="fas fa-arrow-right"></i> Mark device';
+    }
   }
+
+  function updateSampleGate() {
+    const ok = calibration.length >= 2;
+    modeSampleBtn.disabled = !ok;
+    modeSampleBtn.classList.toggle('disabled', !ok);
+  }
+
+  modeCalibBtn.addEventListener('click', () => {
+    if (appMode === 'calibration') return;
+    appMode = 'calibration';
+    updateModeUI();
+    resetCaptureState();
+    showPage('capture');
+  });
+
+  modeSampleBtn.addEventListener('click', () => {
+    if (calibration.length < 2) { alert('Add at least 2 known-concentration standards to the calibration curve first.'); return; }
+    if (appMode === 'sample') return;
+    appMode = 'sample';
+    updateModeUI();
+    resetCaptureState();
+    showPage('capture');
+  });
+
+  editCalibLink.addEventListener('click', () => {
+    appMode = 'calibration';
+    updateModeUI();
+    showPage('curve');
+  });
 
   // ====================================================================
   // NAVIGATION
@@ -644,25 +466,35 @@
     document.getElementById(name + 'Page').classList.add('active');
     tabs.forEach(t => t.classList.toggle('active', t.dataset.page === name));
     currentPage = name;
-
-    if (name === 'mark') {
-      document.getElementById('markCanvasContainer').appendChild(canvas);
-      redraw();
-    } else if (name === 'analyze') {
-      document.getElementById('analyzeCanvasContainer').appendChild(canvas);
-      redraw();
-    }
+    if (name === 'mark') { document.getElementById('markCanvasContainer').appendChild(canvas); redraw(); }
+    else if (name === 'analyze') { document.getElementById('analyzeCanvasContainer').appendChild(canvas); redraw(); }
   }
 
   tabs.forEach(t => t.addEventListener('click', () => {
     const target = t.dataset.page;
-    if (target === 'mark' && !imageLoaded) { alert('Please upload or capture an image first.'); return; }
-    if (target === 'analyze' && !imageLoaded) { alert('Please upload or capture an image first.'); return; }
+    if ((target === 'mark' || target === 'analyze') && !imageLoaded) { alert('Please upload or capture an image first.'); return; }
     if (target === 'result' && !lastResult) { alert('Please select a point and calculate the expression level first.'); return; }
     showPage(target);
   }));
-
   backButtons.forEach(b => b.addEventListener('click', () => showPage(b.dataset.back)));
+
+  // ====================================================================
+  // CAPTURE STATE RESET (between standards / between samples)
+  // ====================================================================
+  function resetCaptureState() {
+    uploadedImage.style.display = 'none';
+    uploadedImage.src = '';
+    placeholder.style.display = 'flex';
+    imageStatus.textContent = 'none';
+    imageLoaded = false;
+    analysisPoint = null;
+    liveSample = null;
+    lastResult = null;
+    liveReadout.style.display = 'none';
+    calcBtn.disabled = true;
+    partInfo.classList.remove('show');
+    stdConcInput.value = '';
+  }
 
   // ====================================================================
   // IMAGE LOADING
@@ -675,17 +507,20 @@
         offCanvas.width = img.naturalWidth;
         offCanvas.height = img.naturalHeight;
         offCtx.drawImage(img, 0, 0);
-
         canvas.width = img.naturalWidth;
         canvas.height = img.naturalHeight;
 
-        shapeState.baseSize = Math.min(img.naturalWidth, img.naturalHeight) * 0.42;
-        shapeState.cx = img.naturalWidth / 2;
-        shapeState.cy = img.naturalHeight * 0.55;
-        shapeState.scale = 1;
-        shapeState.rotation = 0;
-        sizeSlider.value = 1; sizeVal.textContent = '1.00×';
-        rotSlider.value = 0; rotVal.textContent = '0°';
+        if (!shapeInitialized) {
+          shapeState.baseSize = Math.min(img.naturalWidth, img.naturalHeight) * 0.42;
+          shapeState.cx = img.naturalWidth / 2;
+          shapeState.cy = img.naturalHeight * 0.55;
+          shapeState.scale = 1; shapeState.rotation = 0;
+          shapeInitialized = true;
+        } else {
+          shapeState.baseSize = Math.min(img.naturalWidth, img.naturalHeight) * 0.42;
+        }
+        sizeSlider.value = shapeState.scale; sizeVal.textContent = shapeState.scale.toFixed(2) + '×';
+        rotSlider.value = shapeState.rotation; rotVal.textContent = Math.round(shapeState.rotation) + '°';
 
         imageLoaded = true;
         analysisPoint = null;
@@ -717,6 +552,10 @@
 
   goMarkBtn.addEventListener('click', () => {
     if (!imageLoaded) { alert('Please upload or capture an image first.'); return; }
+    if (appMode === 'calibration') {
+      const v = parseFloat(stdConcInput.value);
+      if (isNaN(v)) { alert('Enter the known concentration for this standard first.'); return; }
+    }
     showPage('mark');
   });
 
@@ -748,7 +587,6 @@
     const ry = lx * s * Math.sin(rad) + ly * s * Math.cos(rad);
     return { x: shapeState.cx + rx, y: shapeState.cy + ry };
   }
-
   function worldToLocal(px, py) {
     const s = shapeState.scale * shapeState.baseSize;
     const rad = -shapeState.rotation * Math.PI / 180;
@@ -757,7 +595,6 @@
     const ry = (dx * Math.sin(rad) + dy * Math.cos(rad)) / s;
     return { x: rx, y: ry };
   }
-
   function hitTestPart(px, py) {
     const l = worldToLocal(px, py);
     const ch = SHAPE_LOCAL.chamber;
@@ -851,7 +688,6 @@
       setAnalysisPoint(c.x, c.y);
     }
   });
-
   canvas.addEventListener('pointermove', e => {
     if (currentPage === 'mark' && dragState) {
       const c = getImageCoords(e);
@@ -864,13 +700,11 @@
       }
     }
   });
-
   canvas.addEventListener('pointerup', e => {
     if (currentPage === 'mark' && dragState) {
       if (!dragState.moved) {
         const c = getImageCoords(e);
-        const part = hitTestPart(c.x, c.y);
-        showPartInfo(part);
+        showPartInfo(hitTestPart(c.x, c.y));
       }
       dragState = null;
     }
@@ -879,10 +713,9 @@
   function showPartInfo(part) {
     if (!part) {
       partInfo.innerHTML = '<i class="fas fa-circle-info"></i>Tap directly on the inlet, channel, or chamber outline to identify it.';
-      partInfo.classList.add('show');
-      return;
+    } else {
+      partInfo.innerHTML = PART_INFO[part];
     }
-    partInfo.innerHTML = PART_INFO[part];
     partInfo.classList.add('show');
   }
 
@@ -906,10 +739,7 @@
     redraw();
   });
 
-  goAnalyzeBtn.addEventListener('click', () => {
-    shapeConfirmed = true;
-    showPage('analyze');
-  });
+  goAnalyzeBtn.addEventListener('click', () => showPage('analyze'));
 
   // ====================================================================
   // ANALYZE PAGE — sample pixel color
@@ -961,13 +791,21 @@
 
   calcBtn.addEventListener('click', () => {
     if (!liveSample) return;
-    computeResult();
-    showPage('result');
+    if (appMode === 'calibration') addCalibPoint();
+    else { computeResult(); showPage('result'); }
   });
 
   // ====================================================================
-  // CALIBRATION
+  // CALIBRATION DATA
   // ====================================================================
+  function addCalibPoint() {
+    const conc = parseFloat(stdConcInput.value);
+    calibration.push({ conc: conc, b: liveSample.lab.b });
+    updateCalibUI();
+    resetCaptureState();
+    showPage('curve');
+  }
+
   function estimateConcentration(bVal) {
     const pts = calibration.slice().sort((a, b) => a.b - b.b);
     if (pts.length < 2) return { value: pts.length ? pts[0].conc : 0, extrapolated: true };
@@ -982,43 +820,70 @@
     return { value: 0, extrapolated: true };
   }
 
-  function computeResult() {
-    const rgb = liveSample.rgb, lab = liveSample.lab;
-    const est = estimateConcentration(lab.b);
-    const cutoff = parseFloat(cutoffInput.value) || 0;
-    const units = unitsInput.value || '';
-
-    let qual = 'Negative', badgeClass = 'negative';
-    if (est.value >= cutoff) { qual = 'Positive'; badgeClass = 'positive'; }
-    else if (est.value >= cutoff * 0.8) { qual = 'Equivocal'; badgeClass = ''; }
-
-    lastResult = { rgb, lab, est, cutoff, units, qual };
-
-    qualResult.innerHTML = `<span class="result-badge ${badgeClass}">${qual}</span>`;
-    exprValue.textContent = est.value.toFixed(1) + ' ' + units;
-    exprSub.textContent = est.extrapolated ? 'extrapolated' : 'interpolated';
-    exprSub.className = 'sub' + (est.extrapolated ? ' sub-warn' : '');
-    bValue.textContent = lab.b.toFixed(1);
-    rangeValue.textContent = est.extrapolated ? 'Extrapolated' : 'Within range';
-    rangeValue.style.color = est.extrapolated ? '#b5530a' : '#0b2b4a';
-
-    resultSwatch.style.background = `rgb(${Math.round(rgb.r)},${Math.round(rgb.g)},${Math.round(rgb.b)})`;
-    rIntensity.textContent = Math.round(rgb.r);
-    gIntensity.textContent = Math.round(rgb.g);
-    bIntensity.textContent = Math.round(rgb.b);
+  function renderCalibChart() {
+    if (calibration.length < 2) {
+      calibChartBox.innerHTML = '<div class="chart-empty">Add at least 2 known-concentration standards to see the curve.</div>';
+      return;
+    }
+    const pts = calibration.slice().sort((a, b) => a.conc - b.conc);
+    const W = 300, H = 200, padL = 38, padR = 12, padT = 14, padB = 28;
+    const xs = pts.map(p => p.conc), ys = pts.map(p => p.b);
+    let xMin = Math.min(...xs), xMax = Math.max(...xs);
+    let yMin = Math.min(...ys), yMax = Math.max(...ys);
+    if (xMin === xMax) xMax = xMin + 1;
+    if (yMin === yMax) yMax = yMin + 1;
+    const xPad = (xMax - xMin) * 0.08, yPad = (yMax - yMin) * 0.15;
+    xMin -= xPad; xMax += xPad; yMin -= yPad; yMax += yPad;
+    const sx = c => padL + (c - xMin) / (xMax - xMin) * (W - padL - padR);
+    const sy = b => H - padB - (b - yMin) / (yMax - yMin) * (H - padT - padB);
+    const pathD = pts.map((p, i) => (i === 0 ? 'M' : 'L') + sx(p.conc).toFixed(1) + ' ' + sy(p.b).toFixed(1)).join(' ');
+    let grid = '';
+    for (let i = 0; i <= 4; i++) {
+      const yy = padT + i * (H - padT - padB) / 4;
+      grid += '<line x1="' + padL + '" y1="' + yy + '" x2="' + (W - padR) + '" y2="' + yy + '" stroke="#dfe9f5" stroke-width="1"/>';
+    }
+    const circles = pts.map(p => '<circle cx="' + sx(p.conc).toFixed(1) + '" cy="' + sy(p.b).toFixed(1) + '" r="4.5" fill="#1a5bbf" stroke="white" stroke-width="1.5"/>').join('');
+    const svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" height="100%">' +
+      grid +
+      '<line x1="' + padL + '" y1="' + padT + '" x2="' + padL + '" y2="' + (H - padB) + '" stroke="#9fb6cf" stroke-width="1.2"/>' +
+      '<line x1="' + padL + '" y1="' + (H - padB) + '" x2="' + (W - padR) + '" y2="' + (H - padB) + '" stroke="#9fb6cf" stroke-width="1.2"/>' +
+      '<path d="' + pathD + '" fill="none" stroke="#1a5bbf" stroke-width="2"/>' +
+      circles +
+      '<text x="' + padL + '" y="' + (H - 8) + '" font-size="9" fill="#5b738f">' + xMin.toFixed(0) + '</text>' +
+      '<text x="' + (W - padR) + '" y="' + (H - 8) + '" font-size="9" fill="#5b738f" text-anchor="end">' + xMax.toFixed(0) + '</text>' +
+      '<text x="4" y="' + (padT + 6) + '" font-size="9" fill="#5b738f">' + yMax.toFixed(0) + '</text>' +
+      '<text x="4" y="' + (H - padB) + '" font-size="9" fill="#5b738f">' + yMin.toFixed(0) + '</text>' +
+      '<text x="' + (W / 2) + '" y="' + (H - 1) + '" font-size="9" fill="#3b5c7e" text-anchor="middle">concentration (' + (units || 'units') + ')</text>' +
+      '</svg>';
+    calibChartBox.innerHTML = svg;
   }
 
-  // ----- calibration table UI -----
   function renderCalibTable() {
     calibTableBody.innerHTML = '';
     calibration.forEach((row, i) => {
       const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td><input type="number" step="0.1" value="${row.conc}" data-idx="${i}" data-field="conc"></td>
-        <td><input type="number" step="0.1" value="${row.b}" data-idx="${i}" data-field="b"></td>
-        <td><button class="row-del" data-idx="${i}"><i class="fas fa-xmark"></i></button></td>`;
+      tr.innerHTML =
+        '<td><input type="number" step="any" value="' + row.conc + '" data-idx="' + i + '" data-field="conc"></td>' +
+        '<td><input type="number" step="any" value="' + row.b + '" data-idx="' + i + '" data-field="b"></td>' +
+        '<td><button class="row-del" data-idx="' + i + '"><i class="fas fa-xmark"></i></button></td>';
       calibTableBody.appendChild(tr);
     });
+  }
+
+  function renderCalibStatus() {
+    const n = calibration.length;
+    if (n === 0) { calibStatus.textContent = 'No standards added yet.'; calibStatus.className = 'calib-status warn'; }
+    else if (n === 1) { calibStatus.textContent = '1 standard added — need at least 2 to interpolate.'; calibStatus.className = 'calib-status warn'; }
+    else if (n < 4) { calibStatus.textContent = n + ' standards added — works, but 4–8 spanning your real range is more reliable.'; calibStatus.className = 'calib-status warn'; }
+    else { calibStatus.textContent = n + ' standards added.'; calibStatus.className = 'calib-status'; }
+  }
+
+  function updateCalibUI() {
+    renderCalibTable();
+    renderCalibChart();
+    renderCalibStatus();
+    updateSampleGate();
+    if (lastResult) computeResult();
   }
 
   calibTableBody.addEventListener('input', e => {
@@ -1026,36 +891,76 @@
     const field = e.target.dataset.field;
     if (isNaN(idx) || !field) return;
     calibration[idx][field] = parseFloat(e.target.value) || 0;
+    renderCalibChart();
+    renderCalibStatus();
+    updateSampleGate();
     if (lastResult) computeResult();
   });
 
   calibTableBody.addEventListener('click', e => {
     const btn = e.target.closest('.row-del');
     if (!btn) return;
-    const idx = parseInt(btn.dataset.idx);
-    calibration.splice(idx, 1);
-    renderCalibTable();
-    if (lastResult) computeResult();
+    calibration.splice(parseInt(btn.dataset.idx), 1);
+    updateCalibUI();
   });
 
-  addRowBtn.addEventListener('click', () => {
-    calibration.push({ conc: 0, b: 0 });
-    renderCalibTable();
+  addRowBtn.addEventListener('click', () => { calibration.push({ conc: 0, b: 0 }); updateCalibUI(); });
+
+  addStandardBtn.addEventListener('click', () => { resetCaptureState(); showPage('capture'); });
+
+  loadExampleBtn.addEventListener('click', () => {
+    if (!confirm('Load an illustrative 7-point example dataset? This is for demo purposes only — not validated data — and will replace your current points.')) return;
+    calibration = [
+      { conc: 0, b: 3 }, { conc: 5, b: 9 }, { conc: 10, b: 15 }, { conc: 25, b: 27 },
+      { conc: 50, b: 38 }, { conc: 100, b: 48 }, { conc: 200, b: 55 }
+    ];
+    updateCalibUI();
   });
 
-  resetCalibBtn.addEventListener('click', () => {
-    calibration = defaultCalibration();
-    renderCalibTable();
-    if (lastResult) computeResult();
+  clearCalibBtn.addEventListener('click', () => {
+    if (!confirm('Clear all calibration points?')) return;
+    calibration = [];
+    updateCalibUI();
   });
 
-  cutoffInput.addEventListener('input', () => { if (lastResult) computeResult(); });
-  unitsInput.addEventListener('input', () => { if (lastResult) computeResult(); });
+  unitsInput.addEventListener('input', () => { units = unitsInput.value; renderCalibChart(); if (lastResult) computeResult(); });
+  cutoffInput.addEventListener('input', () => { cutoff = parseFloat(cutoffInput.value) || 0; if (lastResult) computeResult(); });
 
-  calibToggle.addEventListener('click', () => {
-    calibSection.classList.toggle('show');
-    calibToggle.querySelector('i').className = calibSection.classList.contains('show') ? 'fas fa-chevron-up' : 'fas fa-chevron-down';
+  useCalibBtn.addEventListener('click', () => {
+    if (calibration.length < 2) { alert('Add at least 2 known-concentration standards first.'); return; }
+    appMode = 'sample';
+    updateModeUI();
+    resetCaptureState();
+    showPage('capture');
   });
+
+  // ====================================================================
+  // SAMPLE RESULT
+  // ====================================================================
+  function computeResult() {
+    const rgb = liveSample.rgb, lab = liveSample.lab;
+    const est = estimateConcentration(lab.b);
+
+    let qual = 'Negative', badgeClass = 'negative';
+    if (est.value >= cutoff) { qual = 'Positive'; badgeClass = 'positive'; }
+    else if (est.value >= cutoff * 0.8) { qual = 'Equivocal'; badgeClass = ''; }
+
+    lastResult = { rgb, lab, est, qual };
+
+    qualResult.innerHTML = '<span class="result-badge ' + badgeClass + '">' + qual + '</span>';
+    cutoffDisplay.textContent = 'cutoff ' + cutoff + ' ' + units;
+    exprValue.textContent = est.value.toFixed(1) + ' ' + units;
+    exprSub.textContent = est.extrapolated ? 'extrapolated' : 'interpolated';
+    exprSub.className = 'sub' + (est.extrapolated ? ' sub-warn' : '');
+    bValue.textContent = lab.b.toFixed(1);
+    rangeValue.textContent = est.extrapolated ? 'Extrapolated' : 'Within range';
+    rangeValue.style.color = est.extrapolated ? '#b5530a' : '#0b2b4a';
+
+    resultSwatch.style.background = 'rgb(' + Math.round(rgb.r) + ',' + Math.round(rgb.g) + ',' + Math.round(rgb.b) + ')';
+    rIntensity.textContent = Math.round(rgb.r);
+    gIntensity.textContent = Math.round(rgb.g);
+    bIntensity.textContent = Math.round(rgb.b);
+  }
 
   // ====================================================================
   // EXPORT / RESET
@@ -1068,38 +973,29 @@
       rgb: { r: Math.round(lastResult.rgb.r), g: Math.round(lastResult.rgb.g), b: Math.round(lastResult.rgb.b) },
       lab_b: lastResult.lab.b,
       expression_level: lastResult.est.value,
-      units: lastResult.units,
+      units: units,
       extrapolated: lastResult.est.extrapolated,
-      cutoff: lastResult.cutoff,
+      cutoff: cutoff,
       qualitative: lastResult.qual,
       calibration_used: calibration
     };
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = `pad_result_${Date.now()}.json`;
+    link.download = 'pad_result_' + Date.now() + '.json';
     document.body.appendChild(link); link.click(); document.body.removeChild(link);
     URL.revokeObjectURL(link.href);
   });
 
-  resetAllBtn.addEventListener('click', () => {
-    uploadedImage.style.display = 'none';
-    uploadedImage.src = '';
-    placeholder.style.display = 'flex';
-    imageStatus.textContent = 'none';
-    imageLoaded = false;
-    shapeConfirmed = false;
-    analysisPoint = null;
-    liveSample = null;
-    lastResult = null;
-    liveReadout.style.display = 'none';
-    calcBtn.disabled = true;
-    partInfo.classList.remove('show');
-    showPage('capture');
-  });
+  resetAllBtn.addEventListener('click', () => { resetCaptureState(); showPage('capture'); });
 
-  // init
-  renderCalibTable();
+  // ====================================================================
+  // INIT
+  // ====================================================================
+  unitsInput.value = units;
+  cutoffInput.value = cutoff;
+  updateModeUI();
+  updateCalibUI();
   showPage('capture');
 })();
 </script>
