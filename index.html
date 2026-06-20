@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Colorimetric PAD · Mobile</title>
+  <!-- Font Awesome 6 (free) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    body {
+      background: #f2f7fe;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 0.8rem 0.8rem 2rem;
+    }
+
+    /* main card – full width mobile first */
+    .app {
+      max-width: 480px;
+      width: 100%;
+      background: white;
+      border-radius: 2rem;
+      box-shadow: 0 12px 30px rgba(0, 20, 40, 0.12);
+      padding: 1.2rem 1rem 1.8rem;
+      transition: all 0.1s;
+      margin: 0 auto;
+    }
+
+    /* header */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.2rem;
+      flex-wrap: wrap;
+    }
+
+    .header h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #0b2b4a;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .header h1 i {
+      color: #1f6fdf;
+      font-size: 1.4rem;
+    }
+
+    .status-badge {
+      background: #e4edfc;
+      color: #1a5bbf;
+      padding: 0.2rem 0.9rem;
+      border-radius: 30px;
+      font-size: 0.65rem;
+      font-weight: 600;
+      border: 1px solid #c6daf5;
+      white-space: nowrap;
+    }
+
+    /* step tabs */
+    .step-indicator {
+      display: flex;
+      gap: 0.3rem;
+      margin-bottom: 1.2rem;
+      border-bottom: 1px solid #e2ebf6;
+      padding-bottom: 0.5rem;
+    }
+
+    .step-tab {
+      padding: 0.3rem 1rem;
+      border-radius: 30px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: #3f5e80;
+      background: transparent;
+      border: 1px solid transparent;
+      cursor: default;
+      flex: 1;
+      text-align: center;
+    }
+
+    .step-tab.active {
+      background: #1a5bbf;
+      color: white;
+      border-color: #1a5bbf;
+    }
+
+    .step-tab i {
+      margin-right: 4px;
+    }
+
+    /* pages */
+    .page {
+      display: none;
+      animation: fadeIn 0.2s ease;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      0% { opacity: 0.3; transform: translateY(4px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ---- CAPTURE PAGE ---- */
+    .capture-area {
+      background: #f8fbff;
+      border-radius: 1.5rem;
+      padding: 1rem;
+      border: 1px solid #e1eaf5;
+    }
+
+    .preview-box {
+      width: 100%;
+      background: #eaf1fb;
+      border-radius: 1.2rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 180px;
+      border: 1px dashed #b3cae5;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .preview-box img {
+      max-width: 100%;
+      max-height: 280px;
+      object-fit: contain;
+      display: block;
+    }
+
+    .placeholder-text {
+      color: #3a5f83;
+      padding: 1.8rem 0.5rem;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.2rem;
+    }
+
+    .placeholder-text i {
+      font-size: 2.8rem;
+      color: #7d9fc9;
+    }
+
+    .placeholder-text span {
+      font-size: 0.85rem;
+    }
+
+    .action-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.6rem;
+      margin-top: 1.2rem;
+    }
+
+    .btn {
+      background: white;
+      border: 1px solid #c8d8ec;
+      padding: 0.6rem 1.2rem;
+      border-radius: 60px;
+      font-weight: 500;
+      font-size: 0.8rem;
+      color: #1f3a5e;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: 0.1s;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+      flex: 1 1 auto;
+      justify-content: center;
+    }
+
+    .btn i { color: #2a6bb0; font-size: 0.9rem; }
+    .btn-primary {
+      background: #1a5bbf;
+      border-color: #1a5bbf;
+      color: white;
+    }
+    .btn-primary i { color: white; }
+    .btn-primary:active { background: #124a9e; transform: scale(0.96); }
+    .btn-success {
+      background: #1a8b4a;
+      border-color: #1a8b4a;
+      color: white;
+    }
+    .btn-success i { color: white; }
+    .btn-success:active { background: #14733d; transform: scale(0.96); }
+    .btn-outline:active { background: #e9f0fa; }
+
+    #fileInput { display: none; }
+
+    .image-status {
+      text-align: center;
+      margin-top: 0.5rem;
+      font-size: 0.7rem;
+      color: #5e7b9b;
+    }
+
+    /* ---- RESULT PAGE ---- */
+    .result-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .result-header h2 {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #0b2b4a;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    .result-header h2 i { color: #1f6fdf; }
+
+    .result-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.8rem;
+      margin-top: 0.2rem;
+    }
+
+    .metric-card {
+      background: #fafcff;
+      border-radius: 1.2rem;
+      padding: 0.9rem 0.8rem 0.8rem;
+      border: 1px solid #e2ebf6;
+      box-shadow: 0 2px 4px rgba(0, 10, 30, 0.02);
+    }
+
+    .metric-card .label {
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #5b738f;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-bottom: 0.2rem;
+    }
+
+    .metric-card .value {
+      font-size: 1.6rem;
+      font-weight: 600;
+      color: #0b2b4a;
+      line-height: 1.2;
+      word-break: break-word;
+    }
+
+    .metric-card .sub {
+      font-size: 0.65rem;
+      color: #3b5c7e;
+      margin-top: 0.2rem;
+      border-top: 1px solid #e6eefa;
+      padding-top: 0.3rem;
+    }
+
+    .result-badge {
+      display: inline-block;
+      padding: 0.15rem 1rem;
+      border-radius: 40px;
+      font-weight: 600;
+      font-size: 0.8rem;
+      background: #e6edf6;
+      color: #1a3d62;
+    }
+
+    .result-badge.positive {
+      background: #d6f0e0;
+      color: #0a6b3a;
+    }
+    .result-badge.negative {
+      background: #e9eef6;
+      color: #3a5370;
+    }
+
+    .full-width { grid-column: 1 / -1; }
+
+    .result-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 0.6rem;
+      margin-top: 1.5rem;
+      border-top: 1px solid #e4ecf6;
+      padding-top: 1.2rem;
+    }
+
+    .btn-sm { padding: 0.3rem 1rem; font-size: 0.7rem; }
+
+    /* responsive fine-tune */
+    @media (max-width: 400px) {
+      .app { padding: 0.8rem; }
+      .result-grid { gap: 0.5rem; }
+      .metric-card .value { font-size: 1.3rem; }
+      .btn { font-size: 0.7rem; padding: 0.5rem 0.8rem; }
+    }
+
+    .text-muted { color: #5e7b9b; }
+    .mt-1 { margin-top: 0.3rem; }
+    .flex { display: flex; align-items: center; gap: 6px; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+
+<div class="app" id="app">
+
+  <!-- HEADER -->
+  <div class="header">
+    <h1><i class="fas fa-microscope"></i> PAD</h1>
+    <span class="status-badge"><i class="fas fa-circle" style="color:#1f8b4c; font-size:0.5rem;"></i> NS1</span>
+  </div>
+
+  <!-- STEP TABS -->
+  <div class="step-indicator">
+    <span class="step-tab active" id="stepCaptureTab"><i class="fas fa-camera"></i> Capture</span>
+    <span class="step-tab" id="stepResultTab"><i class="fas fa-chart-pie"></i> Result</span>
+  </div>
+
+  <!-- ========== PAGE 1 : CAPTURE ========== -->
+  <div class="page active" id="capturePage">
+    <div class="capture-area">
+      <div class="preview-box" id="previewBox">
+        <div class="placeholder-text" id="placeholder">
+          <i class="fas fa-image"></i>
+          <span>Upload or capture test strip</span>
+          <span style="font-size:0.7rem; color:#6f8fb0;">JPEG, PNG</span>
+        </div>
+        <img id="uploadedImage" style="display: none;" alt="test strip" />
+      </div>
+
+      <div class="action-row">
+        <button class="btn btn-outline" id="uploadBtn"><i class="fas fa-upload"></i> Upload</button>
+        <button class="btn btn-outline" id="captureBtn"><i class="fas fa-camera"></i> Camera</button>
+        <button class="btn btn-success" id="goResultBtn"><i class="fas fa-arrow-right"></i> Result</button>
+      </div>
+      <div class="image-status">
+        <i class="far fa-circle-check"></i> Image: <span id="imageStatus">none</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== PAGE 2 : RESULT ========== -->
+  <div class="page" id="resultPage">
+    <div class="result-header">
+      <h2><i class="fas fa-flask"></i> Result</h2>
+      <button class="btn btn-outline btn-sm" id="backToCaptureBtn"><i class="fas fa-arrow-left"></i> Back</button>
+    </div>
+
+    <!-- result cards -->
+    <div class="result-grid" id="resultGrid">
+      <!-- Qualitative -->
+      <div class="metric-card">
+        <div class="label"><i class="fas fa-vial"></i> Qualitative</div>
+        <div class="value" id="qualResult"><span class="result-badge">—</span></div>
+        <div class="sub">interpretation</div>
+      </div>
+
+      <!-- T/C Ratio -->
+      <div class="metric-card">
+        <div class="label"><i class="fas fa-arrow-right-arrow-left"></i> T / C ratio</div>
+        <div class="value" id="tcRatio">—</div>
+        <div class="sub">normalized</div>
+      </div>
+
+      <!-- Concentration -->
+      <div class="metric-card">
+        <div class="label"><i class="fas fa-weight-scale"></i> Concentration</div>
+        <div class="value" id="concentration">—</div>
+        <div class="sub">ng/mL</div>
+      </div>
+
+      <!-- Confidence -->
+      <div class="metric-card">
+        <div class="label"><i class="fas fa-circle-check"></i> Confidence</div>
+        <div class="value" id="confidence">—</div>
+        <div class="sub">score</div>
+      </div>
+
+      <!-- raw intensities (full width) -->
+      <div class="metric-card full-width" style="background:#f6faff;">
+        <div class="label"><i class="fas fa-chart-line"></i> Raw intensity</div>
+        <div style="display: flex; gap: 1.5rem; flex-wrap: wrap; margin-top: 0.1rem;">
+          <span><span class="text-muted">T:</span> <strong id="tIntensity">—</strong></span>
+          <span><span class="text-muted">C:</span> <strong id="cIntensity">—</strong></span>
+        </div>
+        <div class="sub">pixel value (0-255)</div>
+      </div>
+    </div>
+
+    <!-- result actions -->
+    <div class="result-actions">
+      <button class="btn btn-outline btn-sm" id="exportBtn"><i class="fas fa-file-export"></i> Export</button>
+      <button class="btn btn-outline btn-sm" id="resetResultBtn"><i class="fas fa-rotate-left"></i> Reset</button>
+    </div>
+  </div>
+
+  <!-- hidden file input -->
+  <input type="file" id="fileInput" accept="image/*">
+</div>
+
+<script>
+  (function() {
+    // ----- DOM refs -----
+    const fileInput = document.getElementById('fileInput');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const captureBtn = document.getElementById('captureBtn');
+    const goResultBtn = document.getElementById('goResultBtn');
+    const backToCaptureBtn = document.getElementById('backToCaptureBtn');
+    const resetResultBtn = document.getElementById('resetResultBtn');
+    const exportBtn = document.getElementById('exportBtn');
+
+    const placeholder = document.getElementById('placeholder');
+    const uploadedImage = document.getElementById('uploadedImage');
+    const imageStatus = document.getElementById('imageStatus');
+
+    // result elements
+    const qualResult = document.getElementById('qualResult');
+    const tcRatio = document.getElementById('tcRatio');
+    const concentration = document.getElementById('concentration');
+    const confidence = document.getElementById('confidence');
+    const tIntensity = document.getElementById('tIntensity');
+    const cIntensity = document.getElementById('cIntensity');
+
+    const stepCaptureTab = document.getElementById('stepCaptureTab');
+    const stepResultTab = document.getElementById('stepResultTab');
+    const capturePage = document.getElementById('capturePage');
+    const resultPage = document.getElementById('resultPage');
+
+    // state
+    let currentImageData = null;
+    let lastResult = null;
+
+    // ------------------ navigation ------------------
+    function showPage(page) {
+      if (page === 'capture') {
+        capturePage.classList.add('active');
+        resultPage.classList.remove('active');
+        stepCaptureTab.classList.add('active');
+        stepResultTab.classList.remove('active');
+      } else {
+        capturePage.classList.remove('active');
+        resultPage.classList.add('active');
+        stepCaptureTab.classList.remove('active');
+        stepResultTab.classList.add('active');
+      }
+    }
+
+    // go to result with analysis
+    function goToResultWithAnalysis() {
+      if (!currentImageData) {
+        alert('Please upload or capture an image first.');
+        return;
+      }
+      runSimulatedAnalysis();
+      showPage('result');
+    }
+
+    // ------------------ image load ------------------
+    function loadImageFromFile(file) {
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const dataUrl = e.target.result;
+        uploadedImage.src = dataUrl;
+        uploadedImage.style.display = 'block';
+        placeholder.style.display = 'none';
+        currentImageData = dataUrl;
+        imageStatus.textContent = '✅ loaded';
+        clearResultDisplay();
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function clearResultDisplay() {
+      qualResult.innerHTML = `<span class="result-badge">—</span>`;
+      tcRatio.textContent = '—';
+      concentration.textContent = '—';
+      confidence.textContent = '—';
+      tIntensity.textContent = '—';
+      cIntensity.textContent = '—';
+      lastResult = null;
+    }
+
+    function fullReset() {
+      uploadedImage.style.display = 'none';
+      placeholder.style.display = 'flex';
+      uploadedImage.src = '';
+      currentImageData = null;
+      imageStatus.textContent = 'none';
+      clearResultDisplay();
+      showPage('capture');
+    }
+
+    // ------------------ SIMULATED ANALYSIS ------------------
+    function runSimulatedAnalysis() {
+      if (!currentImageData) return;
+
+      let seed = 0;
+      const str = currentImageData.slice(-120);
+      for (let i = 0; i < str.length; i++) {
+        seed = (seed * 31 + str.charCodeAt(i)) & 0xFFFF;
+      }
+      const tBase = 50 + (seed % 140);
+      const cBase = 90 + ((seed * 7) % 120);
+      const tVal = Math.min(230, Math.max(25, tBase + (seed % 20 - 10)));
+      const cVal = Math.min(230, Math.max(40, cBase + ((seed * 3) % 30 - 15)));
+
+      let ratio = tVal / cVal;
+      ratio = Math.min(1.8, Math.max(0.15, ratio));
+
+      let conc = 0;
+      if (ratio > 0.28) {
+        conc = 50 * (ratio - 0.28) / 1.1;
+        conc = Math.min(82, Math.max(0, conc));
+      }
+      conc = Math.round(conc * 10) / 10;
+
+      let qual = 'Negative';
+      let badgeClass = 'negative';
+      let conf = 65 + (ratio * 15);
+      if (ratio > 0.72) {
+        qual = 'Positive';
+        badgeClass = 'positive';
+        conf = 78 + (ratio * 12);
+      } else if (ratio > 0.55) {
+        qual = 'Equivocal';
+        badgeClass = '';
+        conf = 60 + (ratio * 10);
+      }
+      conf = Math.min(97, Math.round(conf));
+
+      lastResult = {
+        t: Math.round(tVal),
+        c: Math.round(cVal),
+        ratio: ratio,
+        conc: conc,
+        qual: qual,
+        confidence: conf
+      };
+
+      qualResult.innerHTML = `<span class="result-badge ${badgeClass}">${qual}</span>`;
+      tcRatio.textContent = ratio.toFixed(3);
+      concentration.textContent = conc + ' ng/mL';
+      confidence.textContent = conf + '%';
+      tIntensity.textContent = Math.round(tVal);
+      cIntensity.textContent = Math.round(cVal);
+    }
+
+    // ------------------ EXPORT ------------------
+    function exportResults() {
+      if (!lastResult || lastResult.ratio === undefined) {
+        alert('No results to export.');
+        return;
+      }
+      const payload = {
+        timestamp: new Date().toISOString(),
+        intensities: { T: lastResult.t, C: lastResult.c },
+        ratio: lastResult.ratio,
+        concentration: lastResult.conc,
+        qualitative: lastResult.qual,
+        confidence: lastResult.confidence
+      };
+      const json = JSON.stringify(payload, null, 2);
+      const blob = new Blob([json], { type: 'application/json' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `pad_result_${Date.now()}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(link.href);
+    }
+
+    // ------------------ EVENT BINDINGS ------------------
+    uploadBtn.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', function(e) {
+      if (e.target.files && e.target.files.length > 0) {
+        loadImageFromFile(e.target.files[0]);
+      }
+      fileInput.value = '';
+    });
+
+    captureBtn.addEventListener('click', function() {
+      fileInput.setAttribute('capture', 'environment');
+      fileInput.click();
+      setTimeout(() => { fileInput.removeAttribute('capture'); }, 100);
+    });
+
+    goResultBtn.addEventListener('click', goToResultWithAnalysis);
+    backToCaptureBtn.addEventListener('click', () => showPage('capture'));
+    resetResultBtn.addEventListener('click', fullReset);
+    exportBtn.addEventListener('click', exportResults);
+
+    stepResultTab.addEventListener('click', function() {
+      if (!currentImageData) {
+        alert('Please capture or upload an image first.');
+        return;
+      }
+      runSimulatedAnalysis();
+      showPage('result');
+    });
+
+    stepCaptureTab.addEventListener('click', function() {
+      showPage('capture');
+    });
+
+    // init
+    showPage('capture');
+    clearResultDisplay();
+    imageStatus.textContent = 'none';
+  })();
+</script>
+</body>
+</html>
